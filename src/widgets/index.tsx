@@ -20,9 +20,22 @@ async function onActivate(plugin: ReactRNPlugin) {
     );
   await Promise.all(toRegisterAllPluginSettings);
 
-  function numberOfAnswerButtons() {
-    return 2;
-  };
+  async function numberOfAnswerButtonsVisible() {
+    let visibleCount = 0;
+    for (const buttonId of [
+      'immediately',
+      'with-effort',
+      'partial',
+      'forgotten',
+      'too-soon',
+    ]) {
+      const isVisible = await plugin.settings.getSetting(buttonId);
+      if (isVisible) {
+        visibleCount++;
+      }
+    }
+    return visibleCount;
+  }
 
   async function getSavedDisplayStyleForButton(buttonName: AnswerButton): Promise<'none' | 'inherit'> {
     const isVisible = await plugin.settings.getSetting(buttonName)
@@ -55,7 +68,7 @@ async function onActivate(plugin: ReactRNPlugin) {
         }
   
         .spaced-repetition__accuracy-buttons {
-          grid-template-columns: repeat(${numberOfAnswerButtons()}, minmax(0, 1fr)) !important;
+          grid-template-columns: repeat(${await numberOfAnswerButtonsVisible()}, minmax(0, 1fr)) !important;
         }
       `
     );
