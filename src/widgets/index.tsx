@@ -26,7 +26,7 @@ async function getSavedDisplayStyleForButton(buttonName: AnswerButton, plugin: R
   return isVisible ? 'inherit' : 'none';
 }
 
-async function onActivate(plugin: ReactRNPlugin) {
+async function onActivate(plugin: ReactRNPlugin): Promise<void> {
   const toRegisterAllPluginSettings = [
     { id: "immediately" },
     { id: "with-effort" },
@@ -74,5 +74,5 @@ async function onActivate(plugin: ReactRNPlugin) {
     );
   });
 }
-async function onDeactivate(_: ReactRNPlugin) { }
+async function onDeactivate(_: ReactRNPlugin): Promise<void> {}
 declareIndexPlugin(onActivate, onDeactivate);
