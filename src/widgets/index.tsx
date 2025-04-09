@@ -5,31 +5,21 @@ import '../App.css';
 type AnswerButton = 'immediately' | 'with-effort' | 'partial' | 'forgotten' | 'too-soon';
 
 async function onActivate(plugin: ReactRNPlugin) {
-  await plugin.settings.registerBooleanSetting({
-    id: "immediately",
-    title: "Show 'Immediately' answer button",
-    defaultValue: true,
-  });
-  await plugin.settings.registerBooleanSetting({
-    id: "with-effort",
-    title: "Show 'with-effort' answer button",
-    defaultValue: true,
-  });
-  await plugin.settings.registerBooleanSetting({
-    id: "partial",
-    title: "Show 'Partial' answer button",
-    defaultValue: true,
-  });
-  await plugin.settings.registerBooleanSetting({
-    id: "forgotten",
-    title: "Show 'Forgotten' answer button",
-    defaultValue: true,
-  });
-  await plugin.settings.registerBooleanSetting({
-    id: "too-soon",
-    title: "Show 'Too Soon' answer button",
-    defaultValue: true,
-  });
+  const toRegisterAllPluginSettings = 
+    [
+      { id: "immediately" },
+      { id: "with-effort" },
+      { id: "partial" },
+      { id: "forgotten" },
+      { id: "too-soon" },
+    ].map(setting =>
+        plugin.settings.registerBooleanSetting({
+          id: setting.id,
+          title: `Show '${setting.id}' answer button`,
+          defaultValue: true,
+        })
+      );
+  await Promise.all(toRegisterAllPluginSettings);
 
   function numberOfAnswerButtons() {
     return 2;
@@ -71,9 +61,9 @@ async function onActivate(plugin: ReactRNPlugin) {
       `
     );
   });
-  
+
 }
 
-async function onDeactivate(_: ReactRNPlugin) {}
+async function onDeactivate(_: ReactRNPlugin) { }
 
 declareIndexPlugin(onActivate, onDeactivate);
