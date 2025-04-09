@@ -5,20 +5,19 @@ import '../App.css';
 type AnswerButton = 'immediately' | 'with-effort' | 'partial' | 'forgotten' | 'too-soon';
 
 async function onActivate(plugin: ReactRNPlugin) {
-  const toRegisterAllPluginSettings = 
-    [
-      { id: "immediately" },
-      { id: "with-effort" },
-      { id: "partial" },
-      { id: "forgotten" },
-      { id: "too-soon" },
-    ].map(setting =>
-        plugin.settings.registerBooleanSetting({
-          id: setting.id,
-          title: `Show '${setting.id}' answer button`,
-          defaultValue: true,
-        })
-      );
+  const toRegisterAllPluginSettings = [
+    { id: "immediately" },
+    { id: "with-effort" },
+    { id: "partial" },
+    { id: "forgotten" },
+    { id: "too-soon" },
+  ].map(setting =>
+      plugin.settings.registerBooleanSetting({
+        id: setting.id,
+        title: `Show '${setting.id}' answer button`,
+        defaultValue: true,
+      })
+    );
   await Promise.all(toRegisterAllPluginSettings);
 
   function numberOfAnswerButtons() {
