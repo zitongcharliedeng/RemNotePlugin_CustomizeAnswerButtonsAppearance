@@ -1,17 +1,16 @@
 {
+  "author": "zitongcharliedeng",
+  "name": "Customize Answer Buttons",
+  "description": "Disable certain answer buttons, recolor them, and more. Supported on mobile.",
+  "enableOnMobile": true,
+  "id": "zitongcharliedeng-43vdbpz",
+  "repoUrl": "https://github.com/zitongcharliedeng/binary-answer-buttons/tree/main",
   "manifestVersion": 1,
-  "id": "plugin_template",
-  "name": "Plugin Template",
-  "author": "remnote",
-  "repoUrl": "",
   "version": {
     "major": 0,
     "minor": 0,
     "patch": 1
   },
-  "theme": [],
-  "enableOnMobile": false,
-  "description": "",
   "requestNative": false,
   "requiredScopes": [
     {
