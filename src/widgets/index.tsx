@@ -46,18 +46,22 @@ async function registerPluginCss(plugin: ReactRNPlugin): Promise<void> {
 
       .rn-queue__answer-btn--with-effort {
         display: ${await getSavedDisplayStyleForButton('with-effort', plugin)};
+        background-color: ${await getSavedBackgroundColorStyleForButton('with-effort', plugin)} !important;
       }
       
       .rn-queue__answer-btn--partial {
         display: ${await getSavedDisplayStyleForButton('partial', plugin)};
+        background-color: ${await getSavedBackgroundColorStyleForButton('partial', plugin)} !important;
       }
       
       .rn-queue__answer-btn--forgotten {
         display: ${await getSavedDisplayStyleForButton('forgotten', plugin)};
+        background-color: ${await getSavedBackgroundColorStyleForButton('forgotten', plugin)} !important;
       }
 
       .rn-queue__answer-btn--too-soon {
         display: ${await getSavedDisplayStyleForButton('too-soon', plugin)};
+        background-color: ${await getSavedBackgroundColorStyleForButton('too-soon', plugin)} !important;
       }
 
       .spaced-repetition__accuracy-buttons {
