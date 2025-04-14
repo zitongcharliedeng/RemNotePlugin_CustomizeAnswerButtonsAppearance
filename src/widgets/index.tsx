@@ -26,6 +26,37 @@ async function getSavedDisplayStyleForButton(buttonName: AnswerButton, plugin: R
   return isVisible ? 'inherit' : 'none';
 }
 
+async function registerPluginCss(plugin: ReactRNPlugin): Promise<void> {
+  plugin.app.registerCSS(
+    'queue-container',
+    `
+      .rn-queue__answer-btn--immediately {
+        display: ${await getSavedDisplayStyleForButton('immediately', plugin)};
+      }
+
+      .rn-queue__answer-btn--with-effort {
+        display: ${await getSavedDisplayStyleForButton('with-effort', plugin)};
+      }
+      
+      .rn-queue__answer-btn--partial {
+        display: ${await getSavedDisplayStyleForButton('partial', plugin)};
+      }
+      
+      .rn-queue__answer-btn--forgotten {
+        display: ${await getSavedDisplayStyleForButton('forgotten', plugin)};
+      }
+
+      .rn-queue__answer-btn--too-soon {
+        display: ${await getSavedDisplayStyleForButton('too-soon', plugin)};
+      }
+
+      .spaced-repetition__accuracy-buttons {
+        grid-template-columns: repeat(${await numberOfAnswerButtonsVisible(plugin)}, minmax(0, 1fr)) !important;
+      }
+    `
+  );
+}
+
 async function onActivate(plugin: ReactRNPlugin): Promise<void> {
   const toRegisterAllPluginSettings = [
     { id: "immediately" },
@@ -41,37 +72,12 @@ async function onActivate(plugin: ReactRNPlugin): Promise<void> {
     })
   );
   await Promise.all(toRegisterAllPluginSettings);
-
-  // Only necessary to update CSS when it is needed (i.e. when the answer queue is opened)
+  
+  // Register CSS in case RemNote starts with a queue open (QueueEnter event not fired):
+  await registerPluginCss(plugin);
+  // Otherwise, only necessary to update CSS from settings when used:
   plugin.event.addListener(AppEvents.QueueEnter, undefined, async () => {
-    plugin.app.registerCSS(
-      'queue-container',
-      `
-        .rn-queue__answer-btn--immediately {
-          display: ${await getSavedDisplayStyleForButton('immediately', plugin)};
-        }
-  
-        .rn-queue__answer-btn--with-effort {
-          display: ${await getSavedDisplayStyleForButton('with-effort', plugin)};
-        }
-        
-        .rn-queue__answer-btn--partial {
-          display: ${await getSavedDisplayStyleForButton('partial', plugin)};
-        }
-        
-        .rn-queue__answer-btn--forgotten {
-          display: ${await getSavedDisplayStyleForButton('forgotten', plugin)};
-        }
-  
-        .rn-queue__answer-btn--too-soon {
-          display: ${await getSavedDisplayStyleForButton('too-soon', plugin)};
-        }
-  
-        .spaced-repetition__accuracy-buttons {
-          grid-template-columns: repeat(${await numberOfAnswerButtonsVisible(plugin)}, minmax(0, 1fr)) !important;
-        }
-      `
-    );
+    await registerPluginCss(plugin);
   });
 }
 async function onDeactivate(_: ReactRNPlugin): Promise<void> {}
