@@ -26,18 +26,12 @@ async function getSavedDisplayStyleForButton(buttonName: AnswerButton, plugin: R
   return isVisible ? 'inherit' : 'none';
 }
 
-async function getSavedBackgroundColorStyleForButton(buttonName: AnswerButton, plugin: ReactRNPlugin): Promise<string> {
-  const isVisible = await plugin.settings.getSetting(buttonName)
-  return cssColorName;
-}
-
 async function registerPluginCss(plugin: ReactRNPlugin): Promise<void> {
   plugin.app.registerCSS(
     'queue-container',
     `
       .rn-queue__answer-btn--immediately {
         display: ${await getSavedDisplayStyleForButton('immediately', plugin)};
-        background-color: ${await getSavedBackgroundColorStyleForButton('immediately', plugin)} !important;
       }
 
       .rn-queue__answer-btn--with-effort {
@@ -86,5 +80,5 @@ async function onActivate(plugin: ReactRNPlugin): Promise<void> {
     await registerPluginCss(plugin);
   });
 }
-async function onDeactivate(_: ReactRNPlugin): Promise<void> { }
+async function onDeactivate(_: ReactRNPlugin): Promise<void> {}
 declareIndexPlugin(onActivate, onDeactivate);
