@@ -1,4 +1,4 @@
-import { declareIndexPlugin, ReactRNPlugin, AppEvents } from '@remnote/plugin-sdk';
+import { declareIndexPlugin, ReactRNPlugin, AppEvents, SettingEvents } from '@remnote/plugin-sdk';
 import '../style.css';
 import '../App.css';
 
@@ -26,8 +26,13 @@ async function numberOfAnswerButtonsVisible(plugin: ReactRNPlugin): Promise<numb
 }
 
 async function getSavedDisplayStyleForButton(buttonName: AnswerButton, plugin: ReactRNPlugin): Promise<'none' | 'inherit'> {
-  const isVisible = await plugin.settings.getSetting(`display__${buttonName}`);
+  const isVisible = await plugin.settings.getSetting<boolean>(`display__${buttonName}`);
   return isVisible ? 'inherit' : 'none';
+}
+
+async function getSavedBackgroundColorStyleForButton(buttonName: AnswerButton, plugin: ReactRNPlugin): Promise<string> {
+  const cssColorName = await plugin.settings.getSetting<string>(`background-color__${buttonName}`)
+  return cssColorName ?? 'transparent';
 }
 
 async function registerPluginCss(plugin: ReactRNPlugin): Promise<void> {
@@ -36,6 +41,7 @@ async function registerPluginCss(plugin: ReactRNPlugin): Promise<void> {
     `
       .rn-queue__answer-btn--immediately {
         display: ${await getSavedDisplayStyleForButton('immediately', plugin)};
+        background-color: ${await getSavedBackgroundColorStyleForButton('immediately', plugin)} !important;
       }
 
       .rn-queue__answer-btn--with-effort {
@@ -62,28 +68,49 @@ async function registerPluginCss(plugin: ReactRNPlugin): Promise<void> {
 }
 
 async function onActivate(plugin: ReactRNPlugin): Promise<void> {
-  const allPluginSettings: ButtonSetting[] = [
+  const allBooleanPluginSettings: ButtonSetting[] = [
     { id: "display__immediately", buttonName: "immediately" },
     { id: "display__with-effort", buttonName: "with-effort" },
     { id: "display__partial", buttonName: "partial" },
     { id: "display__forgotten", buttonName: "forgotten" },
     { id: "display__too-soon", buttonName: "too-soon" },
   ];
-  const toRegisterAllPluginSettings = allPluginSettings.map(setting =>
-    plugin.settings.registerBooleanSetting({
-      id: setting.id,
-      title: `Show '${setting.buttonName}' answer button`,
-      defaultValue: true,
+  const allStringPluginSettings: ButtonSetting[] = [
+    { id: "background-color__immediately", buttonName: "immediately" },
+    { id: "background-color__with-effort", buttonName: "with-effort" },
+    { id: "background-color__partial", buttonName: "partial" },
+    { id: "background-color__forgotten", buttonName: "forgotten" },
+    { id: "background-color__too-soon", buttonName: "too-soon" },
+  ];
+  const toRegisterAllPluginSettings = [
+    ...allBooleanPluginSettings.map((setting) => {
+      plugin.event.addListener(AppEvents.SettingChanged, `${setting.id}`, async () => {
+        await registerPluginCss(plugin);
+      });
+      return plugin.settings.registerBooleanSetting({
+        id: setting.id,
+        title: `Show '${setting.buttonName}' answer button`,
+        defaultValue: true,
+      })
     })
-  );
+      ,
+    ...allStringPluginSettings.map((setting) => {
+      plugin.event.addListener(AppEvents.SettingChanged, `${setting.id}`, async () => {
+        await registerPluginCss(plugin);
+      });
+      return plugin.settings.registerStringSetting({
+        id: setting.id,
+        title: `Background color for '${setting.buttonName}' answer button. 
+          Use a CSS color name or hex code (e.g. #FF5733)`,
+        defaultValue: 'transparent',
+      })
+    }
+    )
+  ];
   await Promise.all(toRegisterAllPluginSettings);
 
-  // Register CSS in case RemNote starts with a queue open (QueueEnter event not fired):
+  // Register the CSS styles for the first time of the session.
   await registerPluginCss(plugin);
-  // Otherwise, only necessary to update CSS from settings when used:
-  plugin.event.addListener(AppEvents.QueueEnter, undefined, async () => {
-    await registerPluginCss(plugin);
-  });
 }
 async function onDeactivate(_: ReactRNPlugin): Promise<void> {}
 declareIndexPlugin(onActivate, onDeactivate);
