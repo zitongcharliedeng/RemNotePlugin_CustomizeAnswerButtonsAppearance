@@ -121,7 +121,7 @@ async function onActivate(plugin: ReactRNPlugin): Promise<void> {
       return plugin.settings.registerStringSetting({
         id: setting.id,
         title: `Background color for '${setting.buttonName}' answer button. 
-          Use a CSS color name or hex code (e.g. #FF5733)`,
+          Use a CSS color names without wrapping in quotations ("") or semicolons at the end: e.g. "red", or "#FF5733", or "rgb(0 0 255 / 50%)"`,
         defaultValue: 'transparent',
       })
     }),
