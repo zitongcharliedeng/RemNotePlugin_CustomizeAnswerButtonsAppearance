@@ -1,5 +1,5 @@
 # Roadmap of Features
-- [x] Programatically hide answer buttons through plugin settings
-- [ ] Customize color of each answer button w/ color picker
-- [ ] Option to hide all text and emojis on button (i.e. just red and green)
-- [ ] Option to show the keyboard shortcut currently bound for an answer button
+- [x] Programatically hide each answer button through plugin settings
+- [x] Customize color of each answer button w/ color picker
+- [x] Option to hide all text and emojis individually on each button (i.e. just red and green)
+~~- [ ] Option to show the keyboard shortcut currently bound for an answer button~~
