@@ -3,17 +3,21 @@ import '../style.css';
 import '../App.css';
 
 type AnswerButton = 'immediately' | 'with-effort' | 'partial' | 'forgotten' | 'too-soon';
+interface ButtonSetting {
+  id: string;
+  buttonName: AnswerButton;
+}
 
 async function numberOfAnswerButtonsVisible(plugin: ReactRNPlugin): Promise<number> {
   let visibleCount = 0;
-  for (const buttonId of [
+  for (const buttonName of [
     'immediately',
     'with-effort',
     'partial',
     'forgotten',
     'too-soon',
   ]) {
-    const isVisible = await plugin.settings.getSetting(buttonId);
+    const isVisible = await plugin.settings.getSetting(`display__${buttonName}`);
     if (isVisible) {
       visibleCount++;
     }
@@ -22,7 +26,7 @@ async function numberOfAnswerButtonsVisible(plugin: ReactRNPlugin): Promise<numb
 }
 
 async function getSavedDisplayStyleForButton(buttonName: AnswerButton, plugin: ReactRNPlugin): Promise<'none' | 'inherit'> {
-  const isVisible = await plugin.settings.getSetting(buttonName)
+  const isVisible = await plugin.settings.getSetting(`display__${buttonName}`);
   return isVisible ? 'inherit' : 'none';
 }
 
@@ -58,16 +62,17 @@ async function registerPluginCss(plugin: ReactRNPlugin): Promise<void> {
 }
 
 async function onActivate(plugin: ReactRNPlugin): Promise<void> {
-  const toRegisterAllPluginSettings = [
-    { id: "immediately" },
-    { id: "with-effort" },
-    { id: "partial" },
-    { id: "forgotten" },
-    { id: "too-soon" },
-  ].map(setting =>
+  const allPluginSettings: ButtonSetting[] = [
+    { id: "display__immediately", buttonName: "immediately" },
+    { id: "display__with-effort", buttonName: "with-effort" },
+    { id: "display__partial", buttonName: "partial" },
+    { id: "display__forgotten", buttonName: "forgotten" },
+    { id: "display__too-soon", buttonName: "too-soon" },
+  ];
+  const toRegisterAllPluginSettings = allPluginSettings.map(setting =>
     plugin.settings.registerBooleanSetting({
       id: setting.id,
-      title: `Show '${setting.id}' answer button`,
+      title: `Show '${setting.buttonName}' answer button`,
       defaultValue: true,
     })
   );
