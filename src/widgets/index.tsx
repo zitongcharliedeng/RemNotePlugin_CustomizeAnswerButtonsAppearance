@@ -35,9 +35,9 @@ async function getSavedBackgroundColorStyleForButton(buttonName: AnswerButton, p
   return cssColorName ?? 'transparent';
 }
 
-async function getSavedcontentVisibilityStyleForButton(buttonName: AnswerButton, plugin: ReactRNPlugin): Promise<'hidden' | 'auto'> {
-  const isVisible = await plugin.settings.getSetting<boolean>(`content-visibility__${buttonName}`);
-  return isVisible ? 'auto' : 'hidden';
+async function getSavedContentOpacityStyleForButton(buttonName: AnswerButton, plugin: ReactRNPlugin): Promise<'0' | '1'> {
+  const isVisible = await plugin.settings.getSetting<boolean>(`content-opacity__${buttonName}`);
+  return isVisible ? '1' : '0';
 }
 
 async function registerPluginCss(plugin: ReactRNPlugin): Promise<void> {
@@ -47,31 +47,41 @@ async function registerPluginCss(plugin: ReactRNPlugin): Promise<void> {
       .rn-queue__answer-btn--immediately {
         display: ${await getSavedDisplayStyleForButton('immediately', plugin)};
         background-color: ${await getSavedBackgroundColorStyleForButton('immediately', plugin)} !important;
-        content-visibility: ${await getSavedcontentVisibilityStyleForButton('immediately', plugin)} !important;
+      }
+      .rn-queue__answer-btn--immediately > * {
+        opacity: ${await getSavedContentOpacityStyleForButton('immediately', plugin)} !important;
       }
 
       .rn-queue__answer-btn--with-effort {
         display: ${await getSavedDisplayStyleForButton('with-effort', plugin)};
         background-color: ${await getSavedBackgroundColorStyleForButton('with-effort', plugin)} !important;
-        content-visibility: ${await getSavedcontentVisibilityStyleForButton('with-effort', plugin)} !important;
+      }
+      .rn-queue__answer-btn--with-effort > * {
+        opacity: ${await getSavedContentOpacityStyleForButton('with-effort', plugin)} !important;
       }
       
       .rn-queue__answer-btn--partial {
         display: ${await getSavedDisplayStyleForButton('partial', plugin)};
         background-color: ${await getSavedBackgroundColorStyleForButton('partial', plugin)} !important;
-        content-visibility: ${await getSavedcontentVisibilityStyleForButton('partial', plugin)} !important;
+      }
+      .rn-queue__answer-btn--partial > * {
+        opacity: ${await getSavedContentOpacityStyleForButton('partial', plugin)} !important;
       }
       
       .rn-queue__answer-btn--forgotten {
         display: ${await getSavedDisplayStyleForButton('forgotten', plugin)};
         background-color: ${await getSavedBackgroundColorStyleForButton('forgotten', plugin)} !important;
-        content-visibility: ${await getSavedcontentVisibilityStyleForButton('forgotten', plugin)} !important;
+      }
+      .rn-queue__answer-btn--forgotten > * {
+        opacity: ${await getSavedContentOpacityStyleForButton('forgotten', plugin)} !important;
       }
 
       .rn-queue__answer-btn--too-soon {
         display: ${await getSavedDisplayStyleForButton('too-soon', plugin)};
         background-color: ${await getSavedBackgroundColorStyleForButton('too-soon', plugin)} !important;
-        content-visibility: ${await getSavedcontentVisibilityStyleForButton('too-soon', plugin)} !important;
+      }
+      .rn-queue__answer-btn--too-soon > * {
+        opacity: ${await getSavedContentOpacityStyleForButton('too-soon', plugin)} !important;
       }
 
       .spaced-repetition__accuracy-buttons {
@@ -96,12 +106,12 @@ async function onActivate(plugin: ReactRNPlugin): Promise<void> {
     { id: "background-color__forgotten", buttonName: "forgotten" },
     { id: "background-color__too-soon", buttonName: "too-soon" },
   ];
-  const allcontentVisibilityPluginSettings: ButtonSetting[] = [
-    { id: "content-visibility__immediately", buttonName: "immediately" },
-    { id: "content-visibility__with-effort", buttonName: "with-effort" },
-    { id: "content-visibility__partial", buttonName: "partial" },
-    { id: "content-visibility__forgotten", buttonName: "forgotten" },
-    { id: "content-visibility__too-soon", buttonName: "too-soon" },
+  const allContentOpacityPluginSettings: ButtonSetting[] = [
+    { id: "content-opacity__immediately", buttonName: "immediately" },
+    { id: "content-opacity__with-effort", buttonName: "with-effort" },
+    { id: "content-opacity__partial", buttonName: "partial" },
+    { id: "content-opacity__forgotten", buttonName: "forgotten" },
+    { id: "content-opacity__too-soon", buttonName: "too-soon" },
   ];
   const toRegisterAllPluginSettings = [
     ...allDisplayPluginSettings.map((setting) => {
@@ -125,7 +135,7 @@ async function onActivate(plugin: ReactRNPlugin): Promise<void> {
         defaultValue: 'transparent',
       })
     }),
-    ...allcontentVisibilityPluginSettings.map((setting) => {
+    ...allContentOpacityPluginSettings.map((setting) => {
       plugin.event.addListener(AppEvents.SettingChanged, `${setting.id}`, async () => {
         await registerPluginCss(plugin);
       });
