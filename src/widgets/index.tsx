@@ -1,4 +1,4 @@
-import { declareIndexPlugin, ReactRNPlugin, AppEvents, SettingEvents } from '@remnote/plugin-sdk';
+import { declareIndexPlugin, ReactRNPlugin, AppEvents, RNPlugin, WidgetLocation, QueueInteractionScore } from '@remnote/plugin-sdk';
 import '../style.css';
 import '../App.css';
 
@@ -6,6 +6,24 @@ type AnswerButton = 'immediately' | 'with-effort' | 'partial' | 'forgotten' | 't
 interface ButtonSetting {
   id: string;
   buttonName: AnswerButton;
+}
+
+const queueInteractionScoreToButtonName: Record<QueueInteractionScore, AnswerButton> = {
+  [QueueInteractionScore.EASY]: 'immediately',
+  [QueueInteractionScore.GOOD]: 'with-effort',
+  [QueueInteractionScore.HARD]: 'partial',
+  [QueueInteractionScore.AGAIN]: 'forgotten',
+  [QueueInteractionScore.TOO_EARLY]: 'too-soon',
+};
+
+async function showEnableAudioWorkaroundPopup(
+  plugin: RNPlugin,
+) {
+  await plugin.window.openFloatingWidget(
+    "enable_audio_popup",
+    { top: 0, bottom: 0, left: 0, right: 0 },
+    undefined,
+  );
 }
 
 async function numberOfAnswerButtonsVisible(plugin: ReactRNPlugin): Promise<number> {
@@ -38,6 +56,11 @@ async function getSavedBackgroundColorStyleForButton(buttonName: AnswerButton, p
 async function getSavedContentOpacityStyleForButton(buttonName: AnswerButton, plugin: ReactRNPlugin): Promise<'0' | '1'> {
   const isVisible = await plugin.settings.getSetting<boolean>(`content-opacity__${buttonName}`);
   return isVisible ? '1' : '0';
+}
+
+async function getSavedSoundEffectSrcForButton(buttonName: AnswerButton, plugin: ReactRNPlugin): Promise<string> {
+  const soundEffectSrc = await plugin.settings.getSetting<string>(`sound-effect__${buttonName}`);
+  return soundEffectSrc ?? '';
 }
 
 async function registerPluginCss(plugin: ReactRNPlugin): Promise<void> {
@@ -113,6 +136,13 @@ async function onActivate(plugin: ReactRNPlugin): Promise<void> {
     { id: "content-opacity__forgotten", buttonName: "forgotten" },
     { id: "content-opacity__too-soon", buttonName: "too-soon" },
   ];
+  const allSoundEffectPluginSettings: ButtonSetting[] = [
+    { id: "sound-effect__immediately", buttonName: "immediately" },
+    { id: "sound-effect__with-effort", buttonName: "with-effort" },
+    { id: "sound-effect__partial", buttonName: "partial" },
+    { id: "sound-effect__forgotten", buttonName: "forgotten" },
+    { id: "sound-effect__too-soon", buttonName: "too-soon" },
+  ];
   const toRegisterAllPluginSettings = [
     ...allDisplayPluginSettings.map((setting) => {
       plugin.event.addListener(AppEvents.SettingChanged, `${setting.id}`, async () => {
@@ -145,11 +175,50 @@ async function onActivate(plugin: ReactRNPlugin): Promise<void> {
         defaultValue: true,
       })
     }),
+    ...allSoundEffectPluginSettings.map((setting) => {
+      return plugin.settings.registerStringSetting({
+        id: setting.id,
+        title: `Custom sound effect to play when completing the ${setting.buttonName} answer button. 
+          Use a URL which points to a sound e.g. "https://www.myinstants.com/media/sounds/yeahoo.mp3". 
+          You can find links like this in the browser's Network Console from any site triggering an audio effect. 
+          This method doesn't require downloads or uploads but will require internet..?`,
+        defaultValue: 'https://cdn.pixabay.com/audio/2024/01/09/audio_198f24b361.mp3',
+      })
+    }),
   ];
   await Promise.all(toRegisterAllPluginSettings);
 
   // Register the CSS styles for the first time of the session.
   await registerPluginCss(plugin);
+
+  plugin.event.addListener(AppEvents.QueueCompleteCard, undefined, async (data) => {
+    const answerButtonName = queueInteractionScoreToButtonName[data.score as QueueInteractionScore];
+    const audioSrc: string = await getSavedSoundEffectSrcForButton(answerButtonName, plugin); 
+    new Audio(audioSrc).play()
+      .catch((error) => {
+        console.error('Error playing answer button audioSrc:', error);
+      });
+  });
+
+  // Workaround for stackoverflow.com/questions/49930680
+  plugin.event.addListener(AppEvents.QueueEnter, undefined, async () => {
+    await showEnableAudioWorkaroundPopup(plugin);
+  });
+  await plugin.app.registerCommand({
+    id: "showEnableAudioWorkaroundPopup",
+    name: "Show the popup for enabling answer button sound effects.",
+    action: () => showEnableAudioWorkaroundPopup(plugin),
+  });
+  await plugin.app.registerWidget(
+    "enable_audio_popup",
+    WidgetLocation.FloatingWidget,
+    {
+      dimensions: {
+        width: 300,
+        height: "auto",
+      },
+    }
+  );
 }
 async function onDeactivate(_: ReactRNPlugin): Promise<void> {}
 declareIndexPlugin(onActivate, onDeactivate);
