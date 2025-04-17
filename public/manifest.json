@@ -1,15 +1,15 @@
 {
   "author": "zitongcharliedeng",
-  "name": "Customize Answer Buttons Appearance",
-  "description": "Disable certain answer buttons, recolor them, and more. Supported on mobile.",
+  "name": "Customize Answer Buttons",
+  "description": "Disable certain answer buttons, recolor them, give them sounds and more. Supported on mobile.",
   "enableOnMobile": true,
   "id": "zitongcharliedeng-43vdbpz",
   "repoUrl": "https://github.com/zitongcharliedeng/RemNotePlugin_CustomizeAnswerButtonsAppearance/",
   "manifestVersion": 1,
   "version": {
     "major": 2,
-    "minor": 2,
-    "patch": 2
+    "minor": 3,
+    "patch": 0
   },
   "requestNative": false,
   "requiredScopes": [
